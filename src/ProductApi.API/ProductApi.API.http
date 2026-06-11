@@ -1,0 +1,21 @@
+@ProductApi.API_HostAddress = http://localhost:5081
+
+GET {{ProductApi.API_HostAddress}}/api/v1/products?pageNumber=1&pageSize=10
+Accept: application/json
+
+###
+
+POST {{ProductApi.API_HostAddress}}/api/v1/products
+Content-Type: application/json
+
+{
+  "productName": "Laptop",
+  "createdBy": "http-file",
+  "items": [
+    {
+      "quantity": 2
+    }
+  ]
+}
+
+###
