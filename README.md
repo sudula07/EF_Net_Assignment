@@ -1,36 +1,35 @@
 # Product API Technical Assessment
 
-## Project overview
+## Overview
 
-This repository contains a layered `.NET 8` RESTful Product API built with `ASP.NET Core Web API`, `Entity Framework Core`, and `SQL Server`. It implements CRUD operations for `Product` entities and their related `Item` records, with validation, consistent error handling, Swagger, Docker assets, and automated tests.
+This repository contains a RESTful Product API built with `.NET 8`, `ASP.NET Core Web API`, `Entity Framework Core`, and `SQL Server`. The solution implements CRUD operations for `Product` entities and their related `Item` records using a layered architecture focused on clarity, maintainability, and testability.
 
-## Tech stack
+The project includes:
 
-- .NET 8
-- ASP.NET Core Web API
-- Entity Framework Core 8
-- SQL Server / LocalDB
-- FluentValidation
-- Swagger / OpenAPI
-- xUnit
-- Docker / Docker Compose
+- Product CRUD endpoints
+- Entity Framework Core code-first persistence with migrations
+- Request validation with FluentValidation
+- Centralized exception handling middleware
+- Swagger/OpenAPI documentation
+- Unit and smoke/integration tests
+- Docker and Docker Compose support
 
-## Architecture
+Repository:
 
-The solution follows a simple clean layered structure:
+- `https://github.com/sudula07/EF_Net_Assignment.git`
 
-- `src/ProductApi.API`
-  Hosts controllers, middleware, Swagger, authentication wiring, and startup configuration.
-- `src/ProductApi.Application`
-  Contains DTOs, service logic, validators, interfaces, and application exceptions.
-- `src/ProductApi.Domain`
-  Contains core entities and domain primitives.
-- `src/ProductApi.Infrastructure`
-  Contains EF Core, repository implementation, DbContext, and migrations.
-- `tests/ProductApi.Tests`
-  Contains unit tests and an API smoke/integration test.
+## Tech Stack
 
-## Folder structure
+- `.NET 8`
+- `ASP.NET Core Web API`
+- `Entity Framework Core 8`
+- `SQL Server LocalDB / SQL Server`
+- `FluentValidation`
+- `Swagger / OpenAPI`
+- `xUnit`
+- `Docker / Docker Compose`
+
+## Solution Structure
 
 ```text
 .
@@ -47,9 +46,55 @@ The solution follows a simple clean layered structure:
 `-- README.md
 ```
 
-## Database schema
+### Layer Responsibilities
 
-### Products
+- `src/ProductApi.API`
+  Hosts controllers, middleware, startup configuration, and Swagger.
+- `src/ProductApi.Application`
+  Contains DTOs, service logic, validators, interfaces, and application exceptions.
+- `src/ProductApi.Domain`
+  Contains core entities and shared domain primitives.
+- `src/ProductApi.Infrastructure`
+  Contains EF Core configuration, repositories, DbContext, and migrations.
+- `tests/ProductApi.Tests`
+  Contains unit tests and API smoke/integration coverage.
+
+## Implemented Features
+
+### REST Endpoints
+
+- `GET /api/v1/products?pageNumber=1&pageSize=10`
+- `GET /api/v1/products/{id}`
+- `POST /api/v1/products`
+- `PUT /api/v1/products/{id}`
+- `DELETE /api/v1/products/{id}`
+
+### Validation and Error Handling
+
+- Request validation is implemented with `FluentValidation`.
+- Errors are handled through custom middleware for consistent API responses.
+
+### Persistence
+
+- The application uses `Entity Framework Core` with SQL Server.
+- Product records are stored in the `Products` table.
+- Related item rows are stored in the `Items` table.
+- Migrations are applied automatically at startup for relational databases.
+
+## Database Details
+
+Default local configuration:
+
+- Server: `(localdb)\MSSQLLocalDB`
+- Database: `ProductApiDb`
+
+Connection string source:
+
+- `src/ProductApi.API/appsettings.json`
+
+### Schema Summary
+
+#### Products
 
 - `Id` int PK identity
 - `ProductName` nvarchar(200) not null
@@ -58,7 +103,7 @@ The solution follows a simple clean layered structure:
 - `ModifiedBy` nvarchar(100) null
 - `ModifiedOn` datetime2 null
 
-### Items
+#### Items
 
 - `Id` int PK identity
 - `ProductId` int FK to `Products.Id`
@@ -66,20 +111,12 @@ The solution follows a simple clean layered structure:
 
 Relationship:
 
-- One `Product` has many `Items`
-- Deleting a `Product` cascades to its `Items`
+- One product can contain many items.
+- Deleting a product cascades deletion to its items.
 
-## API endpoints
+## Sample Requests
 
-- `GET /api/v1/products?pageNumber=1&pageSize=10`
-- `GET /api/v1/products/{id}`
-- `POST /api/v1/products`
-- `PUT /api/v1/products/{id}`
-- `DELETE /api/v1/products/{id}`
-
-## Example payloads
-
-### Create product
+### Create Product
 
 ```json
 {
@@ -92,7 +129,7 @@ Relationship:
 }
 ```
 
-### Update product
+### Update Product
 
 ```json
 {
@@ -104,14 +141,14 @@ Relationship:
 }
 ```
 
-## How to run locally
+## Running the Application
 
-Prerequisites:
+### Prerequisites
 
-- `.NET SDK` with `net8.0` support
+- `.NET SDK 8`
 - SQL Server LocalDB or SQL Server
 
-Steps:
+### Run Locally
 
 ```powershell
 dotnet build ProductApi.slnx
@@ -122,64 +159,64 @@ Default local Swagger URL:
 
 - `http://localhost:5081/swagger`
 
-The API applies pending EF migrations automatically on startup for relational databases.
-
-## How to run with Docker
+### Run with Docker
 
 ```powershell
 docker compose up --build
 ```
 
-Expected URLs:
+Expected endpoints:
 
 - API: `http://localhost:8080`
 - Swagger: `http://localhost:8080/swagger`
 - SQL Server: `localhost,1433`
 
-## How to apply migrations
+## Entity Framework Migrations
 
-Local EF CLI is configured through `dotnet-tools.json`.
+Restore the local EF tool first:
 
 ```powershell
 dotnet tool restore
+```
+
+Apply migrations:
+
+```powershell
 dotnet dotnet-ef database update --project src/ProductApi.Infrastructure/ProductApi.Infrastructure.csproj --startup-project src/ProductApi.API/ProductApi.API.csproj
 ```
 
-To add a new migration:
+Create a new migration:
 
 ```powershell
 dotnet dotnet-ef migrations add <MigrationName> --project src/ProductApi.Infrastructure/ProductApi.Infrastructure.csproj --startup-project src/ProductApi.API/ProductApi.API.csproj --output-dir Data/Migrations
 ```
 
-## How to run tests
+## Running Tests
 
 ```powershell
 dotnet test ProductApi.slnx
 ```
 
-## Smoke test examples
+## Notes and Assumptions
 
-```powershell
-curl.exe http://localhost:5081/api/v1/products
-```
+- JWT authentication services are wired in the application startup.
+- Current CRUD endpoints are left accessible for straightforward local testing.
+- Test execution uses EF Core `InMemoryDatabase`, not SQL Server.
+- Product update replaces the existing item collection with the submitted payload.
+- Docker configuration is intended for technical assessment use.
 
-```powershell
-curl.exe -X POST http://localhost:5081/api/v1/products `
-  -H "Content-Type: application/json" `
-  -d "{\"productName\":\"Phone\",\"createdBy\":\"smoke-test\",\"items\":[{\"quantity\":3}]}"
-```
+## Submission Checklist
 
-```powershell
-curl.exe http://localhost:5081/swagger
-```
+- Public GitHub repository created
+- Source code pushed to GitHub
+- Local application run verified
+- Screenshot of the running application ready to attach
+- Email subject set to `CRN Technical Assessment Complete Successfully`
 
-## Known assumptions
+## Contact Submission
 
-- JWT authentication wiring is included but CRUD endpoints are left open for easy smoke testing.
-- Update requests replace the product's item collection with the submitted list.
-- Local development uses LocalDB by default.
-- Docker uses placeholder local-development credentials only.
+Please share:
 
-## Submission note
+- Public repository link
+- Screenshot of the API running locally, ideally with Swagger open
 
-This solution is intentionally assessment-ready: straightforward layered design, async CRUD flow, EF Core migrations, tests, Docker assets, and documentation with minimal ceremony.
